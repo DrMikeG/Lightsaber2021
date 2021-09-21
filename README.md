@@ -1,6 +1,13 @@
 # Lightsaber2021
 Working on some light sabers with my kids
 
+See: https://youtu.be/GwyaHJhU9TE
+
+
+I'm using a Adafruit Feather M4 Express - Featuring ATSAMD51 (ATSAMD51 Cortex M4) × 1
+which I am programming in circuit python using MU editor.
+(You have to turn on the enable switch to get the feather to appear as a drive)
+You don't have to turn it on to charge it.
 
 https://learn.adafruit.com/adafruit-prop-maker-featherwing
 
@@ -59,7 +66,8 @@ First two pins
 
 A1 is located along the edge opposite the battery connector. There are multiple ground pins. 3V is located along the same edge as A1, and is next to the reset button.
 
-```"""CircuitPython Essentials Analog In example"""
+```
+"""CircuitPython Essentials Analog In example"""
 import time
 import board
 from analogio import AnalogIn
@@ -78,3 +86,22 @@ while True:
 
 
 ![Alt text](./readme_imgs/circuitpython_FeatherM0ExpressPot_bb.jpg)
+
+
+So, today I learned that the switching tying the enable and ground pins on the prop wing, is an off-on switch, not an on-off switch.
+
+That is - switched closed is off, switch open is on.
+
+So, I tied an switched potentiometer onto the pins, so that I could turn the device on - and adjust an input voltage.
+
+However, because the switch on the wing is, to my mind, backwards - the wing is only on when the switch is off - when the potentiometer is at its lowest setting.
+
+![Alt text](./readme_imgs/Push-Pull-Pots.jpg)
+
+The switch is make/break between the middle lug (eg B) and A or C for the push or pull.
+
+I want to wire B/C as normally closed for off.
+
+Potentiometer
+pin value ranges from 160 - 65520
+
