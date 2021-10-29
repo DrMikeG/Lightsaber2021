@@ -105,3 +105,7 @@ I want to wire B/C as normally closed for off.
 Potentiometer
 pin value ranges from 160 - 65520
 
+
+## 2021/09/26 Turn off sound ##
+
+https://www.geeksforgeeks.org/time-perf_counter-function-in-python/

@@ -62,21 +62,21 @@ COLOR_HIT = HIT_COLOR  # "hit" color is HIT_COLOR set above
 COLOR_SWING = MAIN_COLOR  # "swing" color is MAIN_COLOR set above
 
 def hsv2rgb(h, s, v):
-    
+
     """HSV to RGB
-    
+
     :param float h: 0.0 - 360.0
     :param float s: 0.0 - 1.0
     :param float v: 0.0 - 1.0
-    :return: rgb 
+    :return: rgb
     :rtype: list
-    
+
     """
-    
+
     c = v * s
     x = c * (1 - abs(((h/60.0) % 2) - 1))
     m = v - c
-    
+
     rgb = [255,0,0]
 
     if 0.0 <= h < 60:
@@ -91,8 +91,8 @@ def hsv2rgb(h, s, v):
         rgb = (x, 0, c)
     elif 0.0 <= h < 360:
         rgb = (c, 0, x)
-        
-    return list(map(lambda n: (n + m) * 255, rgb))        
+
+    return list(map(lambda n: (n + m) * 255, rgb))
 
 def lerp0To360(inputValue):
     minInput = 150
@@ -146,8 +146,13 @@ hit_sounds = [
 
 mode = 0  # Initial mode = OFF
 
+soundOn = True
+maxLerpSeen = False
+minLerpSeen = False
+
 # Main loop
 while True:
+
     if mode == 0:  # If currently off...
 
         lerp = lerp0To360( analog_in.value )
@@ -155,6 +160,7 @@ while True:
         MAIN_COLOR = (rgblist[0], rgblist[1], rgblist[2])  # Default is red
 
         enable.value = True
+
         play_wav('on')  # Power up!
         led.color = MAIN_COLOR
         time.sleep(POWER_ON_SOUND_DURATION)
@@ -174,23 +180,50 @@ while True:
 
         # print()
         lerp = lerp0To360( analog_in.value )
+
+        # max lerp is 360
+        # min lerp is 5
+        # if we have seen both 360 and 5 - toggle sounds.
+        if lerp == 360 :
+            maxLerpSeen = True
+        elif lerp < 5 :
+            minLerpSeen = True
+
+        if maxLerpSeen and minLerpSeen:
+            if soundOn:
+                soundOn = False
+                play_wav('off')
+#                audio.stop()
+            elif not soundOn:
+                soundOn = True
+                play_wav('idle', loop=True)  # Play idle sound now
+            
+            maxLerpSeen = False
+            minLerpSeen = False
+
+            print('toggle sound '+str(soundOn))
+            
+
         rgblist = hsv2rgb( lerp, 1.0, 0.8)
         MAIN_COLOR = (rgblist[0], rgblist[1], rgblist[2])  # Default is red
 
-        if mode == 1 and accel_total > SWING_THRESHOLD:  # Mild = SWING
-            play_wav(random.choice(swing_sounds))  # Randomly choose from available swing sounds
-            led.color = MAIN_COLOR  # Set color to main color
-            mode = 2  # SWING mode
-        elif mode == 1:
-            # Idle color
+        if soundOn:
+            if mode == 1 and accel_total > SWING_THRESHOLD:  # Mild = SWING
+                play_wav(random.choice(swing_sounds))  # Randomly choose from available swing sounds
+                led.color = MAIN_COLOR  # Set color to main color
+                mode = 2  # SWING mode
+            elif mode == 1:
+                # Idle color
+                led.color = MAIN_COLOR
+            elif mode > 1:  # If in SWING or HIT mode...
+                if audio.playing:  # And sound currently playing...
+                    if mode == 2:  # If SWING,
+                        led.color = MAIN_COLOR
+                    else:
+                        led.color = HIT_COLOR  # Set color to hit color
+                else:  # No sound now, but still SWING or HIT modes
+                    play_wav('idle', loop=True)  # Resume idle sound
+                    mode = 1  # Return to idle mode
+        else:
             led.color = MAIN_COLOR
-        elif mode > 1:  # If in SWING or HIT mode...
-            if audio.playing:  # And sound currently playing...
-                if mode == 2:  # If SWING,
-                    led.color = MAIN_COLOR
-                else:
-                    led.color = HIT_COLOR  # Set color to hit color
-            else:  # No sound now, but still SWING or HIT modes
-                play_wav('idle', loop=True)  # Resume idle sound
-                mode = 1  # Return to idle mode
 
